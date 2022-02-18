@@ -33,5 +33,6 @@ class ListFragmentAdapter(var countryList: ArrayList<Country>) :
     fun updateList(newList: ArrayList<Country>) {
         countryList.clear()
         countryList.addAll(newList)
+        notifyDataSetChanged()
     }
 }
