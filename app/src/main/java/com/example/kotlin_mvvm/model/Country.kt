@@ -1,4 +1,18 @@
 package com.example.kotlin_mvvm.model
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class Country(var name:String,var flag:String,var capital:String) {
+@Entity
+class Country(
+    @ColumnInfo(name = "name")
+    var name:String,
+    @ColumnInfo(name = "flag")
+    var flag:String,
+    @ColumnInfo(name = "capital")
+    var capital:String) {
+
+    @PrimaryKey(autoGenerate = true)
+    var uuid:Int =0
+
 }
