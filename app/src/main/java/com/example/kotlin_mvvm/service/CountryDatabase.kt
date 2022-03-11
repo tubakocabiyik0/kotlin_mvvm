@@ -9,14 +9,12 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
 
 
-@Database(entities = arrayOf(Country::class), version = 1)
+@Database(entities = [Country::class], version = 1)
 abstract class CountryDatabase() : RoomDatabase() {
 
     abstract fun countryDao(): CountryDao
 
     companion object {
-
-        annotation class Volatile
 
         @Volatile
         private var dbInstance: CountryDatabase? = null
@@ -24,17 +22,15 @@ abstract class CountryDatabase() : RoomDatabase() {
 
         @InternalCoroutinesApi
         operator fun invoke(context: Context) = dbInstance ?: synchronized(lock) {
-            dbInstance ?: createDb(context).also {
-                dbInstance = it
+            dbInstance ?: Room.databaseBuilder(context,CountryDatabase::class.java,"xxx").build().also {
+                 dbInstance = it
+
+
             }
         }
 
 
-        private fun createDb(context: Context): CountryDatabase {
-            val db =
-                Room.databaseBuilder(context, CountryDatabase::class.java, "sss").build()
-            return db
-        }
+        private fun createDb(context: Context) =  Room.databaseBuilder(context, CountryDatabase::class.java, "sss").allowMainThreadQueries().build()
     }
 
 }

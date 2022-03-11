@@ -1,12 +1,11 @@
 package com.example.kotlin_mvvm.viewmodel
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.kotlin_mvvm.model.Country
 import com.example.kotlin_mvvm.service.CountryDatabase
 import com.example.kotlin_mvvm.service.RetrofitService
+import com.example.kotlin_mvvm.util.CustomSharedPreferences
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -17,10 +16,11 @@ class ListFragmentViewModel(application: Application) : BaseViewModel(applicatio
     var countryList = MutableLiveData<ArrayList<Country>>()
     var isLoading = MutableLiveData<Boolean>()
     var error = MutableLiveData<Boolean>()
+    private var customSharedPreferences = CustomSharedPreferences(getApplication())
 
 
     @InternalCoroutinesApi
-    fun getData() {
+    fun getDataFromApi() {
         isLoading.value = true
         error.value = false
         var call = RetrofitService.getRetrofit().getData()
@@ -30,7 +30,7 @@ class ListFragmentViewModel(application: Application) : BaseViewModel(applicatio
                 response: Response<ArrayList<Country>>?
             ) {
                 response?.let {
-
+                    System.out.println("fromApi")
                     saveSql(it)
                     isLoading.value = false
                     error.value = false
@@ -46,20 +46,46 @@ class ListFragmentViewModel(application: Application) : BaseViewModel(applicatio
 
         })
     }
+
     @InternalCoroutinesApi
-    private fun saveSql(list: Response<ArrayList<Country>>){
-     launch {
-         var dao=CountryDatabase(getApplication()).countryDao()
-         //return list of uuid(long )
-         var listLong=dao.addCountry(*list.body().toTypedArray())
-         var i=0
+    private fun saveSql(list: Response<ArrayList<Country>>) {
+        launch {
+            var database = CountryDatabase(getApplication())
+            var dao = database.countryDao()
+            //return list of uuid(long )
+            var listLong = dao.addCountry(*list.body().toTypedArray())
+            var i = 0
 
-         while (i<list.body().size){
-          list.body()[i].uuid=listLong[i].toInt()
-             i=+1
-         }
+            while (i < list.body().size) {
+                list.body()[i].uuid = listLong[i].toInt()
+                i = i + 1
+            }
 
-     }
+        }
+        customSharedPreferences.saveTime(System.nanoTime())
     }
 
+    @InternalCoroutinesApi
+    fun getDatasFromSql() {
+        isLoading.value = true
+        error.value = false
+        launch {
+            val countries = CountryDatabase(getApplication()).countryDao().getAllData()
+
+            if (countries != null) {
+                isLoading.value = false
+                error.value = false
+                countryList.value = countries as ArrayList<Country>
+            } else {
+                isLoading.value = false
+                error.value = true
+            }
+
+
+        }
+    }
+
+    fun getTime(): Long? {
+        return customSharedPreferences.getTime()
+    }
 }

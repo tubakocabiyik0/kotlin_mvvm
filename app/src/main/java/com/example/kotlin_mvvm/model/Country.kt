@@ -3,8 +3,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
-class Country(
+@Entity(tableName = "country")
+ class Country(
     @ColumnInfo(name = "name")
     var name:String,
     @ColumnInfo(name = "flag")
